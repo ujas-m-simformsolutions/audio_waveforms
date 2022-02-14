@@ -1,0 +1,1 @@
+enum RecordingState { playing, stopped }

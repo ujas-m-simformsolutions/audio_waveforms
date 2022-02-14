@@ -37,6 +37,11 @@ class _HomeState extends State<Home> {
   List<double> waveData = [];
   final recordingDataController = StreamController<FoodData>();
   bool isReCording = false;
+  RecordingState recordingState = RecordingState.stopped;
+  final WaveController controller = WaveController();
+
+  //TODO: ask about this
+  Duration updateFrequency = const Duration(milliseconds: 100);
 
   @override
   void initState() {
@@ -61,17 +66,19 @@ class _HomeState extends State<Home> {
         toStream: recordingDataController.sink,
         codec: Codec.pcm16,
         numChannels: 1,
-        sampleRate: 44000,
+        sampleRate: 16000,
       );
-      await recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
+      await recorder.setSubscriptionDuration(updateFrequency);
       isPaused = false;
     }
+    recordingState = RecordingState.playing;
     setState(() {});
   }
 
   Future<void> pause() async {
     await recorder.pauseRecorder();
     isPaused = true;
+    recordingState = RecordingState.stopped;
     setState(() {});
   }
 
@@ -83,27 +90,26 @@ class _HomeState extends State<Home> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 200),
-          ColoredBox(
-            color: Colors.black,
-            child: StreamBuilder<RecordingDisposition>(
-              stream: recorder.onProgress,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox(height: 150.0);
-                } else {
-                  if (snapshot.data?.decibels != null &&
-                      snapshot.data?.decibels != 0.0) {
-                    waveData.add(snapshot.data!.decibels!);
-                  }
-                  return AudioWave(
-                    waveData: waveData,
-                    size: Size(MediaQuery.of(context).size.width, 200.0),
-                  );
+          StreamBuilder<RecordingDisposition>(
+            stream: recorder.onProgress,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox(height: 150.0);
+              } else {
+                if (snapshot.data?.decibels != null) {
+                  waveData.add(snapshot.data!.decibels!);
                 }
-              },
-            ),
+                return AudioWave(
+                  waveData: waveData,
+                  size: Size(MediaQuery.of(context).size.width, 200.0),
+                  recordingState: recordingState,
+                  updateFrequency: updateFrequency,
+                  waveController: controller,
+                );
+              }
+            },
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 40),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -125,6 +131,17 @@ class _HomeState extends State<Home> {
                     onPressed: pause,
                     color: Colors.white,
                     icon: const Icon(Icons.pause),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Center(
+                child: CircleAvatar(
+                  backgroundColor: Colors.black,
+                  child: IconButton(
+                    onPressed: controller.refresh,
+                    color: Colors.white,
+                    icon: const Icon(Icons.refresh),
                   ),
                 ),
               ),
