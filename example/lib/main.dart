@@ -39,9 +39,7 @@ class _HomeState extends State<Home> {
   bool isReCording = false;
   RecordingState recordingState = RecordingState.stopped;
   final WaveController controller = WaveController();
-
-  //TODO: ask about this
-  Duration updateFrequency = const Duration(milliseconds: 100);
+  Duration updateFrequency = const Duration(milliseconds: 1000);
 
   @override
   void initState() {
@@ -71,6 +69,12 @@ class _HomeState extends State<Home> {
       await recorder.setSubscriptionDuration(updateFrequency);
       isPaused = false;
     }
+    ///This will print pcm data in Uint8List
+    recordingDataController.stream.listen((event) {
+      if(event.data != null) {
+        print(event.data!);
+      }
+    });
     recordingState = RecordingState.playing;
     setState(() {});
   }
