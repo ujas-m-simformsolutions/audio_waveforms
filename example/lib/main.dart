@@ -30,7 +30,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    waveController = WaveController()..encoder = Encoder.aac;
+    waveController = WaveController()
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC;
   }
 
   @override
@@ -104,7 +105,7 @@ class _HomeState extends State<Home> {
                     child: IconButton(
                       onPressed: waveController.record,
                       color: Colors.white,
-                      icon: const Icon(Icons.play_arrow),
+                      icon: const Icon(Icons.mic),
                     ),
                   ),
                 ),
