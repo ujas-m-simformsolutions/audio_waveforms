@@ -27,13 +27,12 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
         
         let options: AVAudioSession.CategoryOptions = [.defaultToSpeaker, .allowBluetooth]
         if (path == nil) {
-            let directory = NSTemporaryDirectory()
+            let documentDirectory = getDocumentDirectory()
             let date = Date()
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = fileNameFormat
             let fileName = dateFormatter.string(from: date) + ".m4a"
-            
-            self.path = NSURL.fileURL(withPathComponents: [directory, fileName])?.absoluteString
+            self.path = "\(documentDirectory)/\(fileName)"
         } else {
             self.path = path
         }
@@ -54,8 +53,8 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
             audioRecorder?.isMeteringEnabled = true
             audioRecorder?.record()
             result(true)
-        } catch {
-            result(FlutterError(code: Constants.audioWaveforms, message: "Failed to start recording", details: nil))
+        } catch let err {
+            result(FlutterError(code: Constants.audioWaveforms, message: "Failed to start recording", details: err.localizedDescription))
         }
     }
     
@@ -156,5 +155,9 @@ public class AudioRecorder: NSObject, AVAudioRecorderDelegate{
         default:
             return Int(kAudioFormatMPEG4AAC)
         }
+    }
+    
+    private func getDocumentDirectory() -> String {
+        return NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
     }
 }
