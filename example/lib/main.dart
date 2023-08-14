@@ -220,7 +220,7 @@ class _HomeState extends State<Home> {
           debugPrint("Recorded file size: ${File(path).lengthSync()}");
         }
       } else {
-        await recorderController.record(path: path!);
+        await recorderController.record();
       }
     } catch (e) {
       debugPrint(e.toString());
